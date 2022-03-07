@@ -1,0 +1,26 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.clearfix::after{
+    content: '';
+    clear: both;
+    display: table;
+}
+
+div#grid{
+    margin: 0 auto;
+    width: 500px;
+    height: 500px;
+}
+
+div#grid .square{
+    border: 2px black solid;
+    float: left;
+}
+
+div#grid .square.clicked{
+    background-color: red;
+}
