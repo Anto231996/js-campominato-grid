@@ -21,6 +21,10 @@ div#grid .square{
     float: left;
 }
 
+div#grid .square.clicked-bomb{
+    background-color: blue;
+}
+
 div#grid .square.clicked{
     background-color: red;
 }

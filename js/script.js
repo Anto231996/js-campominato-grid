@@ -30,11 +30,22 @@ function createNewGame(){
 
     for ( let i = 1; i <= cellsNumber; i++){
         const cell = createSquare(i, cellsPerRow);
-        cell.addEventListener('click', function(){
-            this.classList.add('clicked');
-        });
+
+      
+            cell.addEventListener('click', function(){
+                if (bombs.includes(i)){
+                    this.classList.add('clicked');
+                } else {
+                    this.classList.add('clicked-bomb');
+                }
+
+            });
+        
         document.querySelector('#grid').appendChild(cell);
     }
+
+    const bombs = generateBombList(16, cellsNumber)
+    console.log(bombs)
 
 }
 
@@ -47,10 +58,26 @@ function createSquare(number, cellsPerRow){
     return cell;
 }
 
+function generateUniqueRandomNumber(numsBlacklist, minValue, maxValue){
+    let check = false;
+    let randomInt;
 
-function randomInteger (minValue, maxValue){
-    if (isNaN(parseInt(minValue)) || isNaN(parseInt(maxValue))){
-        console.log(randomInteger)
+    while (!check){
+        randomInt = (Math.floor(Math.random()* ((maxValue + 1) - minValue) + minValue));
+
+        if (!numsBlacklist.includes(randomInt)){
+            check = true;
+        }
+
     }
-    return (Math.floor(Math.random()* ((maxValue + 1) - minValue) + minValue))
+
+    return randomInt;
+}
+
+function generateBombList (bombs, numberOfCells){
+    const bombList = []
+    for( i = 0; i < bombs; i++){
+        bombList.push(generateUniqueRandomNumber(bombList, 1, numberOfCells))
+    }
+    return bombList
 }
