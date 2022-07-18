@@ -1,83 +1,116 @@
-document.getElementById('play').addEventListener( "click",
-    function(){
-        createNewGame();
-    }
-)
+const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-function createNewGame(){
+const select = document.getElementById("level");
+const grid = document.getElementById("grid");
+const button = document.getElementById("start");
 
-    document.querySelector('#grid').innerHTML = "";
+function start() {
 
-    const level = parseInt( document.getElementById('level').value );
+    grid.innerHTML = '';
+    grid.style.display = 'flex';
 
-    let cellsPerRow;
-    let cellsNumber;
+    let attempts = 0;
+    const totalBombs = 16;
 
-    switch (level) {
-        case 1:
+    let columns;
+
+    switch (select.value) {
+        case "2":
+            columns = 9;
+            break;
+        case "3":
+            columns = 7;
+            break;
         default:
-            cellsNumber = 100;
-            break;
-        case 2:
-            cellsNumber = 81;
-            break;
-        case 3:
-            cellsNumber = 49;
+            columns = 10;
             break;
     }
 
-    cellsPerRow = Math.sqrt(cellsNumber);
+    const totalCells = columns * columns;
 
-    for ( let i = 1; i <= cellsNumber; i++){
-        const cell = createSquare(i, cellsPerRow);
+    const maxAttempts = totalCells - totalBombs;
+    let bombs = [];
 
-      
-            cell.addEventListener('click', function(){
-                if (bombs.includes(i)){
-                    this.classList.add('clicked');
-                } else {
-                    this.classList.add('clicked-bomb');
-                }
-
-            });
-        
-        document.querySelector('#grid').appendChild(cell);
+    const generateBombs = (totalBombs, totalNumber) => {
+        const bombs = [];
+        while (bombs.length < totalBombs) {
+            const randNumber = getRandomNumber(1, totalNumber);
+            if (!bombs.includes(randNumber)) {
+                bombs.push(randNumber);
+            }
+        }
+        return bombs;
     }
 
-    const bombs = generateBombList(16, cellsNumber)
-    console.log(bombs)
+    const generateGrid = (cellsNumber, cellsPerRow, bombs) => {
+        for (let i = 1; i <= cellsNumber; i++) {
+            const cell = createCell(i, cellsPerRow);
+            cell.addEventListener('click', onCellClick);
+            grid.appendChild(cell);
+        }
+    }
 
-}
+    function createCell(cellNumber, cellsPerRow) {
+        const cell = document.createElement("div");
+        cell.id =  cellNumber;
+        cell.className = "cell";
+        cell.innerText = cellNumber;
+        const wh = `calc(100% / ${cellsPerRow})`;
+        cell.style.height = wh;
+        cell.style.width = wh;
+        return cell;
+    }
 
-function createSquare(number, cellsPerRow){
-    let cell = document.createElement('div');
-    cell.classList.add('square');
-    cell.style.width = `calc(100% / ${cellsPerRow})`
-    cell.style.height = cell.style.width;
-    cell.innerHTML = `<span>${number}</span>`;
-    return cell;
-}
+    function onCellClick(event) {
+        const cell = event.target;
+        cell.removeEventListener("click", onCellClick);
 
-function generateUniqueRandomNumber(numsBlacklist, minValue, maxValue){
-    let check = false;
-    let randomInt;
+        let number = parseInt(cell.id);
 
-    while (!check){
-        randomInt = (Math.floor(Math.random()* ((maxValue + 1) - minValue) + minValue));
+        if (bombs.includes(number)) {
+            gameOver(bombs, attempts, true);
+        } else {
+            cell.classList.add("safe")
+            attempts++;
+            if (attempts === maxAttempts) {
+                gameOver(bombs, attempts, false);
+            }
+        }
+    }
 
-        if (!numsBlacklist.includes(randomInt)){
-            check = true;
+    const gameOver = (bombs, attempts, hasLost) => {
+        const allCells = grid.querySelectorAll('.cell');
+
+        for (let i = 0; i < allCells.length; i++) {
+            allCells[i].removeEventListener('click', onCellClick);
         }
 
+        showBoms(bombs);
+
+        const message = document.createElement('h2');
+        message.className = 'message';
+
+        const messageText = hasLost ? `HAI PERSO, RIPROVA (questo è il tuo punteggio ${attempts})` : `HAI VINTO!`
+        message.innerText = messageText;
+        grid.appendChild(message);
+
     }
 
-    return randomInt;
+    const showBoms = (bombs) => {
+        const cells = document.querySelectorAll('.cell');
+        for (let i = 0; i < totalCells; i++) {
+            const cell = cells[i];
+            const cellNumber = parseInt(cell.innerText);
+            if (bombs.includes(cellNumber)) {
+                cell.classList.add('bomb');
+            }
+        }
+    }
+
+    bombs = generateBombs(totalBombs, totalCells)
+    console.log(bombs);
+
+    generateGrid(totalCells, columns, bombs);
 }
 
-function generateBombList (bombs, numberOfCells){
-    const bombList = []
-    for( i = 0; i < bombs; i++){
-        bombList.push(generateUniqueRandomNumber(bombList, 1, numberOfCells))
-    }
-    return bombList
-}
+button.addEventListener("click", () => start());
